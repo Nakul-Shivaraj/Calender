@@ -5,7 +5,9 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a calendar that stores multiple events.
@@ -72,8 +74,12 @@ public final class CalendarModel {
     int added = 0;
 
     while (true) {
-      if (rule.getEndDate() != null && date.isAfter(rule.getEndDate())) break;
-      if (rule.getOccurrences() > 0 && added >= rule.getOccurrences()) break;
+      if (rule.getEndDate() != null && date.isAfter(rule.getEndDate())) {
+        break;
+      }
+      if (rule.getOccurrences() > 0 && added >= rule.getOccurrences()) {
+        break;
+      }
 
       if (rule.getDaysOfWeek().contains(date.getDayOfWeek())) {
         Event instance = new Event(
@@ -245,7 +251,9 @@ public final class CalendarModel {
   public boolean isBusy(LocalDate date, LocalTime time) {
     for (Event e : events) {
       if (!e.getStartDate().isAfter(date) && !e.getEndDate().isBefore(date)) {
-        if (e.isAllDay()) return true;
+        if (e.isAllDay()) {
+          return true;
+        }
         if (time != null && !time.isBefore(e.getStartTime())
             && time.isBefore(e.getEndTime())) {
           return true;
@@ -266,7 +274,8 @@ public final class CalendarModel {
     Objects.requireNonNull(filePath, "File path cannot be null.");
 
     try (PrintWriter writer = new PrintWriter(filePath, StandardCharsets.UTF_8)) {
-      writer.println("Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,Location,Private");
+      writer.println("Subject,Start Date,Start Time,End Date,End Time,"
+          + "All Day Event,Description,Location,Private");
 
       for (Event e : events) {
         String subject = escapeCsv(e.getSubject());
@@ -286,9 +295,11 @@ public final class CalendarModel {
     }
   }
 
-  /** Escapes commas/quotes for CSV format. */
+  // Escapes commas/quotes for CSV format
   private static String escapeCsv(String text) {
-    if (text == null || text.isBlank()) return "";
+    if (text == null || text.isBlank()) {
+      return "";
+    }
     String escaped = text.replace("\"", "\"\"");
     if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n")) {
       return "\"" + escaped + "\"";
@@ -296,7 +307,20 @@ public final class CalendarModel {
     return escaped;
   }
 
-  public String getTitle() { return title; }
-  public List<Event> getEvents() { return List.copyOf(events); }
-  public boolean allowsConflicts() { return allowConflicts; }
+  public String getTitle() {
+    return title;
+  }
+
+  public List<Event> getEvents() {
+    return List.copyOf(events);
+  }
+
+  /**
+   * Returns whether this calendar allows event conflicts.
+   *
+   * @return {@code true} if conflicts are allowed; {@code false} otherwise
+   */
+  public boolean allowsConflicts() {
+    return allowConflicts;
+  }
 }

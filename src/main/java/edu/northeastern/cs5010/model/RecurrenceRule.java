@@ -78,8 +78,12 @@ public final class RecurrenceRule {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof RecurrenceRule that)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RecurrenceRule that)) {
+      return false;
+    }
     return occurrences == that.occurrences
         && Objects.equals(daysOfWeek, that.daysOfWeek)
         && Objects.equals(endDate, that.endDate);

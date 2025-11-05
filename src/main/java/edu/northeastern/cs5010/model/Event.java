@@ -80,7 +80,9 @@ public final class Event {
    * @return {@code true} if time intervals overlap
    */
   public boolean conflictsWith(Event other) {
-    if (other == null) return false;
+    if (other == null) {
+      return false;
+    }
 
     // All-day events: conflict if their dates overlap
     if (this.isAllDay() && other.isAllDay()) {
@@ -101,14 +103,37 @@ public final class Event {
   }
 
   // ---- Getters ----
-  public String getSubject() { return subject; }
-  public LocalDate getStartDate() { return startDate; }
-  public LocalTime getStartTime() { return startTime; }
-  public LocalDate getEndDate() { return endDate; }
-  public LocalTime getEndTime() { return endTime; }
-  public Visibility getVisibility() { return visibility; }
-  public String getDescription() { return description; }
-  public String getLocation() { return location; }
+  public String getSubject() {
+    return subject;
+  }
+
+  public LocalDate getStartDate() {
+    return startDate;
+  }
+
+  public LocalTime getStartTime() {
+    return startTime;
+  }
+
+  public LocalDate getEndDate() {
+    return endDate;
+  }
+
+  public LocalTime getEndTime() {
+    return endTime;
+  }
+
+  public Visibility getVisibility() {
+    return visibility;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public String getLocation() {
+    return location;
+  }
 
   @Override
   public String toString() {
@@ -118,8 +143,12 @@ public final class Event {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Event event)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Event event)) {
+      return false;
+    }
     return Objects.equals(subject, event.subject)
         && Objects.equals(startDate, event.startDate)
         && Objects.equals(startTime, event.startTime);
