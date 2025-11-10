@@ -19,6 +19,7 @@ public final class CalendarModel {
   private final String title;
   private final List<Event> events = new ArrayList<>();
   private final boolean allowConflicts;
+  private final List<CalendarListener> listeners = new ArrayList<>();
 
   /**
    * Constructs a calendar with a given title and conflict policy.
@@ -52,6 +53,7 @@ public final class CalendarModel {
       }
     }
     events.add(event);
+    announceEventAdded(event);
   }
 
   /**
@@ -105,6 +107,7 @@ public final class CalendarModel {
         }
 
         events.add(instance);
+        announceEventAdded(instance);
         added++;
       }
 
@@ -155,6 +158,7 @@ public final class CalendarModel {
     }
 
     events.add(updated);
+    announceEventModified(updated);
     return updated;
   }
 
@@ -305,6 +309,49 @@ public final class CalendarModel {
       return "\"" + escaped + "\"";
     }
     return escaped;
+  }
+
+  /**
+   * Registers a listener to receive notifications when events are added or modified.
+   *
+   * @param listener the listener to register
+   * @throws IllegalArgumentException if listener is null
+   */
+  public void addCalendarListener(CalendarListener listener) {
+    Objects.requireNonNull(listener, "Listener cannot be null.");
+    listeners.add(listener);
+  }
+
+  /**
+   * Removes a previously registered listener.
+   *
+   * @param listener the listener to remove
+   * @return true if the listener was found and removed, false otherwise
+   */
+  public boolean removeCalendarListener(CalendarListener listener) {
+    return listeners.remove(listener);
+  }
+
+  /**
+   * Notifies all registered listeners that an event was added.
+   *
+   * @param event the event that was added
+   */
+  private void announceEventAdded(Event event) {
+    for (CalendarListener listener : listeners) {
+      listener.onEventAdded(event);
+    }
+  }
+
+  /**
+   * Notifies all registered listeners that an event was modified.
+   *
+   * @param event the event that was modified
+   */
+  private void announceEventModified(Event event) {
+    for (CalendarListener listener : listeners) {
+      listener.onEventModified(event);
+    }
   }
 
   public String getTitle() {
