@@ -1,5 +1,6 @@
 package edu.northeastern.cs5010.model;
 
+import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -11,7 +12,7 @@ import java.util.Set;
  * Defines days of the week on which an event repeats,
  * and either a number of occurrences or an end date.
  */
-public final class RecurrenceRule {
+public final class RecurrenceRule implements Serializable {
 
   private final Set<DayOfWeek> daysOfWeek;
   private final int occurrences;

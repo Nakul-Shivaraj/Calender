@@ -1,5 +1,6 @@
 package edu.northeastern.cs5010.model;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Objects;
@@ -9,7 +10,7 @@ import java.util.Objects;
  * Each event has required and optional details such as subject,
  * start and end dates, and optional times.
  */
-public final class Event {
+public final class Event implements Serializable {
 
   private final String subject;
   private final LocalDate startDate;

@@ -1,7 +1,12 @@
 package edu.northeastern.cs5010.model;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,12 +19,12 @@ import java.util.Objects;
  * Supports adding single and recurring events, conflict detection,
  * querying by date or time, and CSV export.
  */
-public final class CalendarModel {
+public final class CalendarModel implements Serializable {
 
   private final String title;
   private final List<Event> events = new ArrayList<>();
   private final boolean allowConflicts;
-  private final List<CalendarListener> listeners = new ArrayList<>();
+  private transient List<CalendarListener> listeners = new ArrayList<>();
 
   /**
    * Constructs a calendar with a given title and conflict policy.
@@ -130,7 +135,6 @@ public final class CalendarModel {
       LocalTime oldStartTime, Event updated) {
     Objects.requireNonNull(updated, "Updated event cannot be null.");
 
-    // Find the target event
     Event target = null;
     for (Event e : events) {
       if (e.getSubject().equals(oldSubject)
@@ -145,7 +149,6 @@ public final class CalendarModel {
       throw new IllegalArgumentException("Event to modify not found.");
     }
 
-    // Temporarily remove to avoid self-conflict
     events.remove(target);
 
     for (Event e : events) {
@@ -176,10 +179,7 @@ public final class CalendarModel {
     Objects.requireNonNull(template, "Updated event template cannot be null.");
     Objects.requireNonNull(newRule, "New recurrence rule cannot be null.");
 
-    // Remove all existing events in the series
     events.removeIf(e -> e.getSubject().equals(subject));
-
-    // Add the new recurrence
     addRecurringEvent(template, newRule);
   }
 
@@ -269,7 +269,7 @@ public final class CalendarModel {
 
   /**
    * Exports this calendar to a Google Calendar–compatible CSV file.
-   * This method was AI-assisted and manually reviewed.
+   * AI-generated code with manual review.
    *
    * @param filePath output CSV file path
    * @throws IOException if an I/O error occurs
@@ -299,7 +299,49 @@ public final class CalendarModel {
     }
   }
 
-  // Escapes commas/quotes for CSV format
+  /**
+   * Saves all calendars to a file.
+   * AI-generated code with manual review.
+   *
+   * @param calendars list of calendars to save
+   * @param filePath path to save file
+   * @throws IOException if save fails
+   */
+  public static void saveAllCalendars(List<CalendarModel> calendars, String filePath)
+      throws IOException {
+    Objects.requireNonNull(calendars, "Calendars list cannot be null.");
+    Objects.requireNonNull(filePath, "File path cannot be null.");
+
+    try (ObjectOutputStream out = new ObjectOutputStream(
+        new FileOutputStream(filePath))) {
+      out.writeObject(calendars);
+    }
+  }
+
+  /**
+   * Restores all calendars from a saved file.
+   * AI-generated code with manual review.
+   *
+   * @param filePath path to saved file
+   * @return list of restored calendars, or empty list if file does not exist
+   * @throws IOException if file cannot be read
+   */
+  public static List<CalendarModel> restoreAllCalendars(String filePath)
+      throws IOException {
+    Objects.requireNonNull(filePath, "File path cannot be null.");
+
+    try (ObjectInputStream in = new ObjectInputStream(
+        new FileInputStream(filePath))) {
+      Object obj = in.readObject();
+      if (obj instanceof List) {
+        return (List<CalendarModel>) obj;
+      }
+      return new ArrayList<>();
+    } catch (ClassNotFoundException e) {
+      throw new IOException("Cannot read calendar file.", e);
+    }
+  }
+
   private static String escapeCsv(String text) {
     if (text == null || text.isBlank()) {
       return "";
@@ -312,13 +354,15 @@ public final class CalendarModel {
   }
 
   /**
-   * Registers a listener to receive notifications when events are added or modified.
+   * Registers a listener to receive notifications.
    *
    * @param listener the listener to register
-   * @throws IllegalArgumentException if listener is null
    */
   public void addCalendarListener(CalendarListener listener) {
     Objects.requireNonNull(listener, "Listener cannot be null.");
+    if (listeners == null) {
+      listeners = new ArrayList<>();
+    }
     listeners.add(listener);
   }
 
@@ -326,31 +370,28 @@ public final class CalendarModel {
    * Removes a previously registered listener.
    *
    * @param listener the listener to remove
-   * @return true if the listener was found and removed, false otherwise
+   * @return true if the listener was removed
    */
   public boolean removeCalendarListener(CalendarListener listener) {
+    if (listeners == null) {
+      return false;
+    }
     return listeners.remove(listener);
   }
 
-  /**
-   * Notifies all registered listeners that an event was added.
-   *
-   * @param event the event that was added
-   */
   private void announceEventAdded(Event event) {
-    for (CalendarListener listener : listeners) {
-      listener.onEventAdded(event);
+    if (listeners != null) {
+      for (CalendarListener listener : listeners) {
+        listener.onEventAdded(event);
+      }
     }
   }
 
-  /**
-   * Notifies all registered listeners that an event was modified.
-   *
-   * @param event the event that was modified
-   */
   private void announceEventModified(Event event) {
-    for (CalendarListener listener : listeners) {
-      listener.onEventModified(event);
+    if (listeners != null) {
+      for (CalendarListener listener : listeners) {
+        listener.onEventModified(event);
+      }
     }
   }
 
@@ -362,11 +403,6 @@ public final class CalendarModel {
     return List.copyOf(events);
   }
 
-  /**
-   * Returns whether this calendar allows event conflicts.
-   *
-   * @return {@code true} if conflicts are allowed; {@code false} otherwise
-   */
   public boolean allowsConflicts() {
     return allowConflicts;
   }
